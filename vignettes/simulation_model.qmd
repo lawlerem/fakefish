@@ -1,0 +1,294 @@
+---
+title: A General Purpose Model for Simulating Fake Fish Populations
+format: html
+date: last-modified
+self-contained: true
+author: 
+    - name: Ethan Lawler 
+      orcid: 0000-0002-6225-3009
+      corresponding: true
+      email: lawlerem@dal.ca
+      affiliations: 
+        - Department of Mathematics and Statistics, Dalhousie University
+        - Department of Oceanography, Dalhousie University
+abstract: |
+bibliography: /home/ethan/citation_manager/bibliography.bib
+citation: true
+---
+
+
+We present a simulation model to create synthetic class- and age-structured fish 
+    stock under active fishing.
+The simulation model will produce abundance of a fish stock as a function of
+    class (e.g. length or weight bin), age, and year.
+Population dynamics includes processes for growth (G) between classes from 
+    age/year $[a,~ y]$ to $[a + 1,~ y + 1]$, total mortality (Z) as the sum of 
+    natural mortality (M) and fishing mortality (F) for each class, age, and 
+    year combination, and recruitment (R) using a Beverton-Holt 
+    stock-recruitment relationship.
+
+
+|                  Symbol | Definition                                                      |
+|------------------------:|:----------------------------------------------------------------|
+| $n_{c},~ n_{a},~ n_{y}$ | Number of classes (not including dead), ages tracked, and years |
+|           $[c,~ a,~ y]$ | Index for class $c$, age $a$, and year $y$                      |
+|       $[\cdot,~ a,~ y]$ | Index for all classes at age $a$ and year $y$                   |
+|              $\epsilon$ | General stand-in for independent Gaussian random error          |
+|           $\epsilon(x)$ | General stand-in for smooth functions, i.e.~ Gaussian processes |
+
+: Notation guide for general quantities and indexing {#tbl-not-general}
+
+
+
+
+## Abundance Dynamics 
+
+|                     Symbol | Definition                                                       |
+|---------------------------:|:-----------------------------------------------------------------|
+| $\mathbf{N}_{[c,~ a,~ y]}$ | Abundance for $[c,~ a,~ y]$                                      |
+|     $\mathbf{G}_{[a,~ y]}$ | Growth matrix from $[a,~ y]$ to $[a + 1,~ y + 1]$                |
+| $\mathbf{Z}_{[c,~ a,~ y]}$ | Total mortality rate from $[c,~ a,~ y]$ to $[-,~ a + 1,~ y + 1]$ |
+|    $\text{diag}\mathbf{Z}$ | Diagonal matrix formed from the vector $\mathbf{Z}$              | 
+|         $\Delta_{[c,~ y]}$ | Class composition of recruits for year $y$                       |
+|         $\mathbf{\bar{b}}$ | Vector of average living biomass per individual                  |
+|               $\mathbf{1}$ | Vector (of the appropriate size) of all ones                     |
+|               $\text{SSB}$ | Spawning stock biomass                                           |
+|           $\alpha,~ \beta$ | Beverton-Holt recruitment parameters                             |
+
+: Indexing guide for abundance dynamics {#tbl-not-abundance}
+
+This section uses notation from @tbl-not-abundance.
+
+$$
+\begin{align*}
+    \mathbf{N}_{[\cdot,~ n_{a},~ y + 1]} &=
+        \mathbf{G}_{[n_{a} - 1,~ y]}
+            e^{-\text{diag}\mathbf{Z}_{[\cdot,~ n_{a} - 1,~ y]}}\cdot 
+            \mathbf{N}_{[\cdot,~ n_{a} - 1,~ y]} +
+        \mathbf{G}_{[n_{a},~ y]} 
+        e^{-\text{diag}\mathbf{Z}_{[\cdot,~ n_{a},~ y]}}\cdot 
+        \mathbf{N}_{[\cdot,~ n_{a},~ y]} \\
+    \mathbf{N}_{[\cdot,~ a + 1,~ y + 1]} &=
+        \mathbf{G}_{[a,~ y]} 
+        e^{-\text{diag}\mathbf{Z}_{[\cdot,~ a,~ y]}^{T}} \cdot
+        \mathbf{N}_{[\cdot,~ a,~ y]} \\
+    \mathbf{N}_{[\cdot,~ 1,~ y + 1]} &=
+        \mathbf{\Delta}_{[\cdot,~ y]} \cdot 
+        \text{BH}\left(
+            \mathbf{\bar{b}}^{T}\mathbf{N}_{[\cdot,~ \cdot,~ y]}\mathbf{1}
+        \right)\cdot e^{\epsilon} \\
+    \text{BH}\left(\text{SSB}\right) &=
+        \frac{\text{SSB}}{\alpha + \beta\cdot\text{SSB}}
+\end{align*}
+$$
+
+Abundance $\mathbf{N}_{[c,~ a,~ y]}$ is tracked for each combination of class, 
+    age, and year.
+The class is meant to capture either size-structure or length-structure.
+The age index includes a "plus" group for age $n_{c}$ after which that exact age
+    is no longer tracked, and the members of the plus group stay in the plus
+    group year after year.
+Abundance dynamics are captured through growth processes $\mathbf{G}_{[a,~ y]}$ 
+    that determine how individuals grow through different classes as they age, 
+    and mortality $\mathbf{Z}_{[c,~ a,~, y]}$ that determines how many 
+    individuals die every year.
+The stock-recruitment relationship is assumed to follow a Beverton-Holt 
+    relationship with the total number of recruits depending on the spawning
+    stock biomass.
+The class composition of recruits is determined by a compositional vector 
+    $\mathbf{\Delta}_{[c,~ y]}$.
+Each parameter in the model is potentially class, age, and year dependent as
+    described in the following sections.
+
+
+## Growth
+
+|                              Symbol | Definition                                        |
+|------------------------------------:|:--------------------------------------------------|
+|              $\mathbf{G}_{[a,~ y]}$ | Growth matrix from $[a,~ y]$ to $[a + 1,~ y + 1]$ |
+|                  $\gamma_{[a,~ y]}$ | Growth rate multiplier for $[a,~ y]$              |
+|                  $\mathbf{X}_{[y]}$ | Covariates for $[y]$                              |
+|                             $\beta$ | Covariate effect parameters                       |
+|        $\mathbf{\Gamma}$ | Class-based growth rate matrix with $n_{c}$ rows and columns |
+|                  $r_{j}$ | Growth rate from $[j,~ a,~ y]$ to $[j + 1,~ a + 1,~ y + 1]$  |
+
+: Indexing guide for growth {#tbl-not-growth}
+
+This section uses notation from @tbl-not-growth.
+
+$$
+\begin{align*}
+    \mathbf{G}_{[a,~ y]} &= 
+        e^{\gamma_{[a,~ y]}\cdot \mathbf{\Gamma}} \\
+    \gamma_{[a,~ y]} &=
+        e^{\mathbf{X}_{[y]}\mathbf{\beta}}
+        e^{\epsilon\left(a\right)}
+        e^{\epsilon\left(y\right)} \\
+    \Gamma_{i, j} &=
+        \begin{cases}
+            -r_{j} & i = j ~\text{and}~ j < n_{c} \\
+            r_{j}  & i = j + 1 ~\text{and}~ j < n_{c} \\
+            0      & \text{o.w.}
+        \end{cases}
+\end{align*}
+$$
+
+Growth processes determine the rate at which individuals grow from one class to
+    the next as they age.
+Since growth is a continuous process, meaning that an individual first has to
+    grow into class 2 before growing into class 3, we parametrize growth with
+    a instantaneous growth rate matrix and use the matrix exponential to track
+    growth at discrete time steps of one year.
+We assume growth rate is the product of independent effects of environmental
+    factors $\mathbf{X}_{[y]}$, age $\epsilon(a)$, year $\epsilon(a)$, and class 
+    $\Gamma$.
+We assume that $\mathbf{X}_{[y]}$ is centered so that the average 
+    $\mathbf{X}_{[y]}$ across all years is equal to 0; it is not centered on a 
+    per-year basis.
+The class growth rates $r_{j}$ determine the baseline growth rate from class
+    $j$ to class $j + 1$.
+For stocks with a large number of classes, as is common in a length-structured
+    stock with narrow length bins, the class growth rates could follow a random
+    walk so that $r_{j}$ and $r_{j + 1}$ are similar.
+
+Computation of the matrix exponential is very time consuming for repeated 
+    evaluations, so we approximate $e^{\gamma_{[a,~ y]}\cdot \mathbf{\Gamma}}$ 
+    with a low-order Pade approximant expanded around $\gamma_{[a,~ y]} = 1$.
+We expand the approximant around $\gamma_{[a,~ y]} = 1$ since, by construction,
+    the expected values of $\mathbf{X}_{[y]}\mathbf{\beta}$, $f(a)$, and $f(y)$
+    are each equal to 0, so the expected value of $\gamma_{[a,~ y]}$ is 1.
+Noting that
+$$
+\begin{align*}
+    e^{\gamma_{[a,~ y]}\cdot \mathbf{\Gamma}} &=
+        e^{(\gamma_{[a,~ y]} - 1 + 1)\cdot \mathbf{\Gamma}} \\
+    &=
+        e^{(\gamma_{[a,~ y]} - 1)\cdot \mathbf{\Gamma}}e^{\mathbf{\Gamma}} \\
+    &\approx
+        \left[\mathbf{I} - \frac{1}{2}(\gamma_{[a,~ y]} - 1)\cdot \mathbf{\Gamma}\right]^{-1}
+        \left[\mathbf{I} + \frac{1}{2}(\gamma_{[a,~ y]} - 1)\cdot \mathbf{\Gamma}\right]
+        e^{\mathbf{\Gamma}}
+\end{align*}
+$$
+The approximation we use is the $(1,~1)$ order Pade approximant, however higher
+    order diagonal approximates can easily be used [@Moler2003].
+
+
+
+## Mortality
+
+|                     Symbol | Definition                                                         |
+|---------------------------:|:-------------------------------------------------------------------|
+| $\mathbf{Z}_{[c,~ a,~ y]}$ | Total mortality rate from $[c,~ a,~ y]$ to $[-,~ a + 1,~ y + 1]$   |
+|     $\mathbf{F}_{[c,~ y]}$ | Fishing mortality rate from $[c,~ y]$ to $[-,~ y + 1]$             |
+|      $\mathbf{\phi}_{[c]}$ | Gear selectivity for $[c]$                                         |
+| $\mathbf{M}_{[c,~ a,~ y]}$ | Fishing mortality rate from $[c,~ a,~ y]$ to $[-,~ a + 1,~ y + 1]$ |
+|             $F_{0}, M_{0}$ | Baseline fishing and natural mortality                             |
+
+: Indexing guide for mortality {#tbl-not-mortality}
+
+This section uses notation from @tbl-not-mortality.
+
+$$
+\begin{align*}
+    \mathbf{Z}_{[c,~ a,~ y]} &= 
+        \mathbf{F}_{[c,~ y]} + \mathbf{M}_{[c,~ a,~ y]} \\
+    \mathbf{F}_{[c,~ y]} &= 
+        F_{0}\mathbf{\phi}_{[c]}e^{\epsilon\left(y\right)} \\
+    \mathbf{M}_{[c,~ a,~ y]} &= 
+        M_{0}e^{\mathbf{X}_{[y]}\beta}e^{\epsilon\left(c\right)} 
+            e^{\epsilon\left(a\right)}e^{\epsilon\left(y\right)}
+\end{align*}
+$$
+
+Fishing mortality is proportional to gear selectivity, which depends only on 
+    class, and a year effect which is a proxy for fishing effort.
+There is no age effect on fishing mortality since there is no mechanism which
+    specifically selects for specific ages.
+Natural mortality is proportional to fixed environmental effects and independent 
+    random effects of class, age, and year.
+
+
+
+## Recruitment Composition
+
+|             Symbol | Definition                                        |
+|-------------------:|:--------------------------------------------------|
+| $\Delta_{[c,~ y]}$ | Class composition of recruits for year $y$        |
+|       $\text{Crl}$ | Continuation ratio logit transformation           |
+| $\delta_{[c,~ y]}$ | Working parameters for recruit class compositions |
+
+: Indexing guide for recruit class composition {#tbl-not-composition}
+
+This section uses notation from @tbl-not-composition.
+
+$$
+\begin{align*}
+    \Delta_{[1:n_{c},~ y]} &= 
+        \text{Crl}\left(\delta_{[1:(n_{c} - 1),~ y]}\right) \\
+    \delta_{[c,~ y]} &=
+        \delta_{[c,~ 0]} + \epsilon\left(y\right)
+\end{align*}
+$$
+
+The recruitment class composition $\mathbf{\Delta}_{[c,~ y]}$ is defined using a 
+    continuation-ratio-logit transformation of working parameters 
+    $\delta_{[c,~ y]}$.
+The working parameters depend on a mean composition plus effects of year.
+By having each $\delta_{[c,~ y]}$ depend on the same year effect, the 
+    average class gets either larger or smaller but does not bifurcate with
+    the composition of e.g. classes 1 and 3 increasing with that of class 2
+    decreasing.
+
+
+
+# Population Initialization
+
+|              Symbol | Definition                                               |
+|--------------------:|:---------------------------------------------------------|
+|  $\mathbf{\bar{G}}$ | Average growth matrix for initializing population        |
+|  $\mathbf{\bar{Z}}$ | Average total mortality rate for initializing population |
+| $\mathcal{N}_{[a]}$ | Initial total abundance numbers at age                   |
+|   $\mathcal{N}_{0}$ | Median total abundance parameter                         |
+
+: Indexing guide for quantities used to initialize population {#tbl-not-initial}
+
+This section uses notation from @tbl-not-initial.
+
+$$
+\begin{align*}
+    \mathbf{N}_{[\cdot,~ n_{a},~ 1]} &=
+        \left(
+            \mathbf{\bar{G}} 
+            e^{-\text{diag}\mathbf{\bar{Z}}^{T}}
+        \right)^{n_{a} - 1}\cdot 
+        \Delta_{[\cdot,~ 1]} \left(
+            \mathcal{N}_{[n_{a}]} + \mathcal{N}_{[n_{a} + 1]}
+        \right) \\
+    \mathbf{N}_{[\cdot,~ a,~ 1]} &=
+        \left(
+            \mathbf{\bar{G}} 
+            e^{-\text{diag}\mathbf{\bar{Z}}^{T}}
+        \right)^{a - 1}\cdot 
+        \Delta_{[\cdot,~ 1]} \mathcal{N}_{[a]} \\
+    \mathcal{N}_{[a]} &=
+        \mathcal{N}_{0}e^{\epsilon\left(a\right)}
+\end{align*}
+$$
+
+We initialize the population by simulating initial population sizes for each
+    cohort present in year 1.
+The recruitment class compositions are assumed to be the same for all years.
+The cohorts are tracked forward to the starting year by following the abundance
+    dynamics models with a simplified average growth matrix and mortality matrix.
+To track a population forward $n$ years, yearly growth and mortality needs to be
+    applied $n$ times, which equates to multiplying the recruit class numbers by 
+    the combined growth and mortality matrix $n$ times.
+The "plus" age group may have additional abundance not captured by this 
+    procedure, for cohorts not tracked by this procedure, so an additional free
+    parameter $\mathcal{N}_{[n_{a} + 1]}$ is used to capture the total number of
+    individuals from previous cohorts who are still alive when the youngest
+    indivuduals of the plus group were recruited.
+
+
+
