@@ -8,3 +8,18 @@ export(sim_growth)
 export(sim_mortality)
 export(sim_population)
 export(sim_recruitment)
+importFrom(Matrix,expm)
+importFrom(elhelpers,
+  crl,
+  icrl
+)
+importFrom(graphics,
+  lines,
+  par,
+  plot.new
+)
+importFrom(nnspline,
+  create_nnspline,
+  rspline
+)
+importFrom(utils,head)

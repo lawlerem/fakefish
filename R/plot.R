@@ -4,7 +4,7 @@
 #'     The output of sim_growth, or a list with elements:
 #'     * growth_matrix A n_class x n_class x n_age x n_year array.
 #'     * growth_rate A n_class x n_age x n_year array.
-#' @param age, year
+#' @param age,year
 #'     Either missing or an integer index. At least one must be missing.
 #'     If both are missing, the growth rate adjustment is plotted.
 #'     If age is missing and year is supplied, the growth transition matrix for
@@ -27,7 +27,7 @@ plot_growth<- function(
     }
 
     if( missing(age) & missing(year) ) {
-        opar<- par(
+        opar<- graphics::par(
             mfrow = c(
                 ceiling(sqrt(n_age)), 
                 ceiling(n_age / ceiling(sqrt(n_age)))
@@ -43,17 +43,17 @@ plot_growth<- function(
                 type = "l"
             )
         }
-        par(opar)
+        graphics::par(opar)
     }
 
     if( !missing(age) ) {
-        opar<- par(
+        opar<- graphics::par(
             mfrow = c(n_class, n_class),
             mar = c(1.1, 1.1, 1.1, 1.1)
         )
         for( to in seq_len(n_class) ) {
         for( from in seq_len(n_class) ) {
-            if( to < from ) {plot.new(); next}
+            if( to < from ) {graphics::plot.new(); next}
             plot(
                 x = seq_len(n_year),
                 y = growth$growth_matrix[to, from, age, ],
@@ -62,17 +62,17 @@ plot_growth<- function(
             )
         }
         }
-        par(opar)
+        graphics::par(opar)
     }
 
     if( !missing(year) ) {
-        opar<- par(
+        opar<- graphics::par(
             mfrow = c(n_class, n_class),
             mar = c(1.1, 1.1, 1.1, 1.1)
         )
         for( to in seq_len(n_class) ) {
         for( from in seq_len(n_class) ) {
-            if( to < from ) {plot.new(); next}
+            if( to < from ) {graphics::plot.new(); next}
             plot(
                 x = seq_len(n_age),
                 y = growth$growth_matrix[to, from, , year],
@@ -81,7 +81,7 @@ plot_growth<- function(
             )
         }
         }
-        par(opar)
+        graphics::par(opar)
     }
 
     return(invisible())
@@ -119,7 +119,7 @@ plot_mortality<- function(
     ylim<- range(mort)
 
     if( type == "fishing" ) {
-        opar<- par(
+        opar<- graphics::par(
             mfrow = c(n_class, 1),
             mar = c(1.1, 3.1, 1.1, 1.1)
         )
@@ -131,11 +131,11 @@ plot_mortality<- function(
                 type = "l"
             )
         }
-        par(opar)
+        graphics::par(opar)
         return(invisible())
     }
 
-    opar<- par(
+    opar<- graphics::par(
         mfrow = c(n_class, n_age),
         mar = c(1.1, 1.1, 1.1, 1.1)
     )
@@ -149,7 +149,7 @@ plot_mortality<- function(
         )
     }
     }
-    par(opar)
+    graphics::par(opar)
 
     return(invisible())
 }
@@ -181,7 +181,7 @@ plot_abundance<- function(
     ylim<- range(cuml_abundance, na.rm = TRUE)
 
     if( by == "year" ) {
-        opar<- par(
+        opar<- graphics::par(
             mfrow = c(
                 ceiling(sqrt(n_age)), 
                 ceiling(n_age / ceiling(sqrt(n_age)))
@@ -196,16 +196,16 @@ plot_abundance<- function(
                 type = "n"
             )
             for( c in seq_len(n_class) ) {
-                lines(
+                graphics::lines(
                     x = seq_len(n_year),
                     y = cuml_abundance[c, a, ]
                 )
             }
         }
-        par(opar)
+        graphics::par(opar)
     }
     if( by == "cohort" ) {
-        opar<- par(
+        opar<- graphics::par(
             mfrow = c(
                 ceiling(sqrt(n_cohort)), 
                 ceiling(n_cohort / ceiling(sqrt(n_cohort)))
@@ -224,13 +224,13 @@ plot_abundance<- function(
                     seq_len(n_age),
                     convert_ayc(age = seq_len(n_age), cohort = co)
                 )
-                lines(
+                graphics::lines(
                     x = seq_len(n_age),
                     y = cuml_abundance[idx],
                 )
             }
         }
-        par(opar)
+        graphics::par(opar)
     }
 
     return(invisible())

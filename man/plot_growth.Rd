@@ -13,8 +13,7 @@ plot_growth(growth, age, year)
 \item growth_rate A n_class x n_age x n_year array.
 }}
 
-\item{age, }{year
-Either missing or an integer index. At least one must be missing.
+\item{age, year}{Either missing or an integer index. At least one must be missing.
 If both are missing, the growth rate adjustment is plotted.
 If age is missing and year is supplied, the growth transition matrix for
 the given year is plotted as a function of age.

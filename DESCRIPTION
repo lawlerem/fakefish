@@ -12,3 +12,10 @@ Suggests:
     quarto
 VignetteBuilder: quarto
 Config/roxygen2/version: 8.1.0
+Depends: R (>= 4.3.0)
+Imports: 
+    elhelpers,
+    graphics,
+    Matrix,
+    nnspline,
+    utils
