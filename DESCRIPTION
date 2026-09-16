@@ -18,4 +18,8 @@ Imports:
     graphics,
     Matrix,
     nnspline,
+    sf,
+    stats,
+    units,
     utils
+LazyData: true
