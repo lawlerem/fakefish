@@ -8,10 +8,12 @@ sim_growth(
   n_class,
   n_age,
   n_cohort,
+  geometry,
   mean_growth_rate,
   p_growth_class = c(0.3, 2),
   p_growth_age = c(0.3, 2),
-  p_growth_year = c(0.3, 2)
+  p_growth_year = c(0.3, 2),
+  p_growth_geometry = c(0.3, 2)
 )
 }
 \arguments{
@@ -21,6 +23,9 @@ sim_growth(
 
 \item{n_cohort}{The number of cohorts tracked in the stock.}
 
+\item{geometry}{An sf object with polygon geometries describing the geometry of the stock
+area.}
+
 \item{mean_growth_rate}{The typical growth rate from one class to the next.}
 
 \item{p_growth_class}{Parameters (height, stretch) governing class variability in growth.}
@@ -28,15 +33,17 @@ sim_growth(
 \item{p_growth_age}{Parameters (height, stretch) governing age variability in growth.}
 
 \item{p_growth_year}{Parameters (height, stretch) governing yearly variability in growth.}
+
+\item{p_growth_geometry}{Parameters (height, stretch) governing spatial variability in growth.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
-* growth_matrix A n_class x n_class x n_age x n_year array giving the 
-    yearly growth transition matrix.
+* growth_matrix A n_class x n_class x n_age x n_year x n_geom stars array
+      giving the yearly growth transition matrix.
 * class_growth_rate A n_class x n_class matrix giving the average growth
     rate from one class to the next.
-* growth_rate A n_age x n_year matrix giving adjustments to the average
-    growth rate.
+* growth_rate A n_age x n_year x n_geom stars array giving adjustments to
+      the average growth rate.
 * growth_splines A list with splines governing variability.
 }\if{html}{\out{</div>}}
 }

@@ -23,7 +23,13 @@ importFrom(graphics,
 )
 importFrom(nnspline,
   create_nnspline,
-  rspline
+  rspline,
+  update_spline
+)
+importFrom(sf,st_geometry)
+importFrom(stars,
+  st_as_stars,
+  st_dimensions
 )
 importFrom(stats,
   plogis,

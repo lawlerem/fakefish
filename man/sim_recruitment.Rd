@@ -7,16 +7,22 @@
 sim_recruitment(
   n_class,
   n_cohort,
+  geometry,
   mean_recruitment_composition = c(1, rep(0.01/(n_class - 1), n_class - 1)),
   mean_recruit_abundance,
   p_composition_cohort = c(0.3, 6),
-  p_abundance_cohort = c(0.3, 6)
+  p_composition_geometry = c(0.3, 6),
+  p_abundance_cohort = c(0.3, 6),
+  p_abundance_geometry = c(0.3, 6)
 )
 }
 \arguments{
 \item{n_class}{The number of size classes in the stock.}
 
 \item{n_cohort}{The number of cohorts tracked in the stock.}
+
+\item{geometry}{An sf object with polygon geometries describing the geometry of the stock
+area.}
 
 \item{mean_recruitment_composition}{The typical composition of the recruit class. Entries will be rescaled to
 sum to  1.}
@@ -25,12 +31,18 @@ sum to  1.}
 
 \item{p_composition_cohort}{Parameters (height, stretch) governing yearly variability in composition.}
 
+\item{p_composition_geometry}{Parameters (height, stretch) governing spatial variability in
+composition.}
+
 \item{p_abundance_cohort}{Parameters (height, stretch) governing yearly variability in abundance.}
+
+\item{p_abundance_geometry}{Parameters (height, stretch) governing spatial variability in abundance.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
-* abundance A n_class x n_cohort array giving the recruit abundance.
-* abundance_cohort A list with splines governing variability.
+* abundance A n_class x n_cohort x n_geometry stars array giving the 
+      recruit abundance.
+* recruitment_splines A list with splines governing variability.
 }\if{html}{\out{</div>}}
 }
 \description{

@@ -7,19 +7,21 @@
 sim_abundance(recruitment, growth, mortality)
 }
 \arguments{
-\item{recruitment}{The output of sim_recruitment, or a list with a n_class x n_cohort array
-named "recruits" giving recruit abundance.}
+\item{recruitment}{The output of sim_recruitment, or a list with a n_class x n_cohort x
+n_geom array named "recruits" giving recruit abundance.}
 
 \item{growth}{The output of sim_growth, or a list with a n_class x n_class x n_age x
-n_age array named "growth_matrix" giving the yearly growth transition
-matrix.}
+n_age x n_geom stars array named "growth_matrix" giving the yearly growth
+transition matrix.}
 
-\item{mortality}{The output of sim_mortality, or a list with a n_class x n_age x n_year
-array named "total_mortality" giving the total mortality rate.}
+\item{mortality}{The output of sim_mortality, or a list with a n_class x n_age x n_year x
+n_geom stars array named "total_mortality" giving the total mortality
+rate.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
-* abundance A n_class x n_age x n_year array giving the stock abundance.
+* abundance A n_class x n_age x n_year x n_geom stars array giving the
+      stock abundance.
 }\if{html}{\out{</div>}}
 }
 \description{

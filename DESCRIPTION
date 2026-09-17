@@ -19,6 +19,7 @@ Imports:
     Matrix,
     nnspline,
     sf,
+    stars,
     stats,
     units,
     utils

@@ -8,6 +8,7 @@ sim_population(
   n_class,
   n_age,
   n_cohort,
+  geometry,
   mean_recruitment_composition,
   mean_recruit_abundance,
   mean_growth_rate,
@@ -15,14 +16,19 @@ sim_population(
   fishing_selectivity,
   mean_natural_mortality,
   p_composition_cohort = c(0.3, 6),
+  p_composition_geometry = c(0.3, 6),
   p_abundance_cohort = c(0.3, 6),
+  p_abundance_geometry = c(0.3, 6),
   p_growth_class = c(0.3, 2),
   p_growth_age = c(0.3, 2),
   p_growth_year = c(0.3, 2),
+  p_growth_geometry = c(0.3, 2),
   p_fishing_year = c(0.3, 6),
+  p_fishing_geometry = c(0.3, 6),
   p_natural_class = c(0.3, 2),
   p_natural_age = c(0.3, 2),
-  p_natural_year = c(0.3, 2)
+  p_natural_year = c(0.3, 2),
+  p_natural_geometry = c(0.3, 2)
 )
 }
 \arguments{
@@ -31,6 +37,8 @@ sim_population(
 \item{n_age}{The number of ages tracked in the stock.}
 
 \item{n_cohort}{The number of cohorts tracked in the stock.}
+
+\item{geometry}{An sf object with polygon geometries describing the fishing area.}
 
 \item{mean_recruitment_composition}{See ?sim_recruitment.}
 
@@ -46,7 +54,11 @@ sim_population(
 
 \item{p_composition_cohort}{See ?sim_recruitment}
 
+\item{p_composition_geometry}{See ?sim_recruitment}
+
 \item{p_abundance_cohort}{See ?sim_recruitment}
+
+\item{p_abundance_geometry}{See ?sim_recruitment}
 
 \item{p_growth_class}{See ?sim_growth}
 
@@ -54,13 +66,19 @@ sim_population(
 
 \item{p_growth_year}{See ?sim_growth}
 
+\item{p_growth_geometry}{See ?sim_growth}
+
 \item{p_fishing_year}{See ?sim_mortality}
+
+\item{p_fishing_geometry}{See ?sim_mortality}
 
 \item{p_natural_class}{See ?sim_mortality}
 
 \item{p_natural_age}{See ?sim_mortality}
 
 \item{p_natural_year}{See ?sim_mortality}
+
+\item{p_natural_geometry}{See ?sim_mortality}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list concatenating the results of sim_recruitment, sim_growth,
