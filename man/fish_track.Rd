@@ -7,6 +7,7 @@
 fish_track(
   fishing_track,
   fish,
+  selectivity,
   geometry,
   catchability_mean,
   catchability_var,
@@ -17,7 +18,10 @@ fish_track(
 \arguments{
 \item{fishing_track}{An integer vector giving the polygons fished.}
 
-\item{fish}{A vector giving the amount of fish in each polygon.}
+\item{fish}{A n_class x n_age x n_geometry stars array giving the abundance of fish
+at each polygon.}
+
+\item{selectivity}{A vector of length n_class giving the gear selectivity by class.}
 
 \item{geometry}{An sf object with polygon geometries describing the fishing area.}
 
@@ -30,8 +34,13 @@ fish_track(
 \item{area_var}{The variance of area fished per step of the fishing track.}
 }
 \value{
-\if{html}{\out{<div class="sourceCode">}}\preformatted{A list with vectors giving the catch, catchability, and area fished for 
-each step of the fishing track.
+\if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
+* catch A n_class x n_age x n_track stars array giving the catch for each
+      fishing step.
+* catch_by_geometry A n_class x n_age x n_geom stars array giving the
+      catch for each polygon.
+* catchability A vector of actual catchabilities for each fishing step.
+* area_fished A vector of area towed for each fishing step.
 }\if{html}{\out{</div>}}
 }
 \description{

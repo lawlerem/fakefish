@@ -65,7 +65,10 @@ generate_fishing_track<- \(
 #' @param fishing_track
 #'     An integer vector giving the polygons fished.
 #' @param fish
-#'     A vector giving the amount of fish in each polygon.
+#'     A n_class x n_age x n_geometry stars array giving the abundance of fish
+#'         at each polygon.
+#' @param selectivity
+#'     A vector of length n_class giving the gear selectivity by class.
 #' @param geometry
 #'     An sf object with polygon geometries describing the fishing area.
 #' @param catchability_mean
@@ -78,41 +81,72 @@ generate_fishing_track<- \(
 #'     The variance of area fished per step of the fishing track.
 #' 
 #' @return
-#'     A list with vectors giving the catch, catchability, and area fished for 
-#'     each step of the fishing track.
+#'     A list with elements
+#'     * catch A n_class x n_age x n_track stars array giving the catch for each
+#'           fishing step.
+#'     * catch_by_geometry A n_class x n_age x n_geom stars array giving the
+#'           catch for each polygon.
+#'     * catchability A vector of actual catchabilities for each fishing step.
+#'     * area_fished A vector of area towed for each fishing step.
 #' 
 #' @export
 fish_track<- \(
     fishing_track,
     fish,
+    selectivity,
     geometry,
     catchability_mean,
     catchability_var,
     area_mean,
     area_var
 ) {
+    n_class<- dim(fish)[1]
+    n_age<- dim(fish)[2]
+    n_geom<- dim(fish)[3]
+
     catchability<- rnorm(
             length(fishing_track),
             qlogis(catchability_mean),
             catchability_var
         ) |>
         plogis()
-    catch<- numeric(length(fishing_track))
+    catch<- array(0, dim = c(n_class, n_age, length(fishing_track)))
+    catch_by_geo<- array(0, dim = c(n_class, n_age, nrow(geometry)))
     area<- elhelpers::rgammamv(
         length(fishing_track),
         mean = area_mean,
         var = area_var
     )
     geo_area<- sf::st_area(geometry) |> units::drop_units()
-    area<- (area / geo_area[fishing_track]) |> sapply(min, 1)
-    for( i in seq_along(catch) ) {
-        catch[i]<- area[i] * catchability[i] * fish[fishing_track[i]]
-        fish[fishing_track[i]]<- fish[fishing_track[i]] - catch[i]
+    parea<- (area / geo_area[fishing_track]) |> sapply(min, 1)
+
+
+    for( i in seq_along(fishing_track) ) {
+        catch[, , i]<- (parea[i] * catchability[i] * fish[[1]][, , fishing_track[i]]) |>
+            sweep(1, selectivity, `*`)
+        catch_by_geo[, , fishing_track[i]]<- catch_by_geo[, , fishing_track[i]] +
+            catch[, , i]
+        fish[[1]][, , fishing_track[i]]<- fish[[1]][, , fishing_track[i]] - catch[, , i]
     }
 
     return(
         list(
-            catch = catch,
+            catch = stars::st_as_stars(
+                list(catch = catch),
+                dimensions = stars::st_dimensions(
+                    class = seq_len(n_class),
+                    age = seq_len(n_age),
+                    tow = seq_along(fishing_track)
+                )
+            ),
+            catch_by_geometry = stars::st_as_stars(
+                list(catch = catch_by_geo),
+                dimensions = stars::st_dimensions(
+                    class = seq_len(n_class),
+                    age = seq_len(n_age),
+                    geometry = geometry |> sf::st_geometry()
+                )
+            ),
             catchability = catchability,
             area = area
         )
