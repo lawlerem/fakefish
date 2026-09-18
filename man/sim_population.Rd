@@ -13,8 +13,15 @@ sim_population(
   mean_recruit_abundance,
   mean_growth_rate,
   mean_fishing_mortality,
-  fishing_selectivity,
   mean_natural_mortality,
+  fishing_mean_time,
+  fishing_mean_duration,
+  fishing_mean_trips,
+  fishing_selectivity,
+  catchability_mean,
+  catchability_var,
+  fishing_area_mean,
+  fishing_area_var,
   p_composition_cohort = c(0.3, 6),
   p_composition_geometry = c(0.3, 6),
   p_abundance_cohort = c(0.3, 6),
@@ -40,45 +47,68 @@ sim_population(
 
 \item{geometry}{An sf object with polygon geometries describing the fishing area.}
 
-\item{mean_recruitment_composition}{See ?sim_recruitment.}
+\item{mean_recruitment_composition}{The typical composition of the recruit class. Entries will be rescaled to
+sum to  1.}
 
-\item{mean_recruit_abundance}{See ?sim_recruitment.}
+\item{mean_recruit_abundance}{The typical total abudance of the recruit class.}
 
-\item{mean_growth_rate}{See ?sim_growth.}
+\item{mean_growth_rate}{The typical growth rate from one class to the next.}
 
-\item{mean_fishing_mortality}{See ?sim_mortality.}
+\item{mean_fishing_mortality}{The typical fishing mortality rate.}
 
-\item{fishing_selectivity}{See ?sim_mortality.}
+\item{mean_natural_mortality}{The typical natural mortality rate.}
 
-\item{mean_natural_mortality}{See ?sim_mortality.}
+\item{fishing_mean_time}{The average number of steps spent in each polygon.}
 
-\item{p_composition_cohort}{See ?sim_recruitment}
+\item{fishing_mean_duration}{The average duration of fishing trips.}
 
-\item{p_composition_geometry}{See ?sim_recruitment}
+\item{fishing_mean_trips}{The average number of distinct fishing trips per year.}
 
-\item{p_abundance_cohort}{See ?sim_recruitment}
+\item{fishing_selectivity}{A n_class vector giving the gear selectivity of the fishery. Elements
+should be be between 0 and 1.}
 
-\item{p_abundance_geometry}{See ?sim_recruitment}
+\item{catchability_mean}{The average catchability.}
 
-\item{p_growth_class}{See ?sim_growth}
+\item{catchability_var}{The variance of qlogis(catchability)}
 
-\item{p_growth_age}{See ?sim_growth}
+\item{fishing_area_mean}{The average area fished per step.}
 
-\item{p_growth_year}{See ?sim_growth}
+\item{fishing_area_var}{The variance of area fished per step.}
 
-\item{p_growth_geometry}{See ?sim_growth}
+\item{p_composition_cohort}{Parameters (height, stretch) governing yearly variability in composition.}
 
-\item{p_fishing_year}{See ?sim_mortality}
+\item{p_composition_geometry}{Parameters (height, stretch) governing spatial variability in
+composition.}
 
-\item{p_fishing_geometry}{See ?sim_mortality}
+\item{p_abundance_cohort}{Parameters (height, stretch) governing yearly variability in abundance.}
 
-\item{p_natural_class}{See ?sim_mortality}
+\item{p_abundance_geometry}{Parameters (height, stretch) governing spatial variability in abundance.}
 
-\item{p_natural_age}{See ?sim_mortality}
+\item{p_growth_class}{Parameters (height, stretch) governing class variability in growth.}
 
-\item{p_natural_year}{See ?sim_mortality}
+\item{p_growth_age}{Parameters (height, stretch) governing age variability in growth.}
 
-\item{p_natural_geometry}{See ?sim_mortality}
+\item{p_growth_year}{Parameters (height, stretch) governing yearly variability in growth.}
+
+\item{p_growth_geometry}{Parameters (height, stretch) governing spatial variability in growth.}
+
+\item{p_fishing_year}{Parameters (height, stretch) governing yearly variability in fishing
+mortality.}
+
+\item{p_fishing_geometry}{Parameters (height, stretch) governing spatial variability in fishing
+mortality.}
+
+\item{p_natural_class}{Parameters (height, stretch) governing class variability in natural
+mortality.}
+
+\item{p_natural_age}{Parameters (height, stretch) governing age variability in natural
+mortality.}
+
+\item{p_natural_year}{Parameters (height, stretch) governing yearly variability in natural
+mortality.}
+
+\item{p_natural_geometry}{Parameters (height, stretch) governing spatial variability in natural
+mortality.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list concatenating the results of sim_recruitment, sim_growth,

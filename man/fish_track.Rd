@@ -18,8 +18,8 @@ fish_track(
 \arguments{
 \item{fishing_track}{An integer vector giving the polygons fished.}
 
-\item{fish}{A n_class x n_age x n_geometry stars array giving the abundance of fish
-at each polygon.}
+\item{fish}{A n_class x n_age x n_geometry array giving the abundance of fish at each
+polygon.}
 
 \item{selectivity}{A vector of length n_class giving the gear selectivity by class.}
 

@@ -65,8 +65,8 @@ generate_fishing_track<- \(
 #' @param fishing_track
 #'     An integer vector giving the polygons fished.
 #' @param fish
-#'     A n_class x n_age x n_geometry stars array giving the abundance of fish
-#'         at each polygon.
+#'     A n_class x n_age x n_geometry array giving the abundance of fish at each
+#'         polygon.
 #' @param selectivity
 #'     A vector of length n_class giving the gear selectivity by class.
 #' @param geometry
@@ -122,11 +122,11 @@ fish_track<- \(
 
 
     for( i in seq_along(fishing_track) ) {
-        catch[, , i]<- (parea[i] * catchability[i] * fish[[1]][, , fishing_track[i]]) |>
+        catch[, , i]<- (parea[i] * catchability[i] * fish[, , fishing_track[i]]) |>
             sweep(1, selectivity, `*`)
         catch_by_geo[, , fishing_track[i]]<- catch_by_geo[, , fishing_track[i]] +
             catch[, , i]
-        fish[[1]][, , fishing_track[i]]<- fish[[1]][, , fishing_track[i]] - catch[, , i]
+        fish[, , fishing_track[i]]<- fish[, , fishing_track[i]] - catch[, , i]
     }
 
     return(

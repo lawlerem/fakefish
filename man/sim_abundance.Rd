@@ -4,7 +4,19 @@
 \alias{sim_abundance}
 \title{Simulate mortality parameters for a fish stock}
 \usage{
-sim_abundance(recruitment, growth, mortality)
+sim_abundance(
+  recruitment,
+  growth,
+  mortality,
+  fishing_mean_time,
+  fishing_mean_duration,
+  fishing_mean_trips,
+  fishing_selectivity,
+  catchability_mean,
+  catchability_var,
+  fishing_area_mean,
+  fishing_area_var
+)
 }
 \arguments{
 \item{recruitment}{The output of sim_recruitment, or a list with a n_class x n_cohort x
@@ -17,6 +29,20 @@ transition matrix.}
 \item{mortality}{The output of sim_mortality, or a list with a n_class x n_age x n_year x
 n_geom stars array named "total_mortality" giving the total mortality
 rate.}
+
+\item{fishing_mean_time}{The average number of steps spent in each polygon.}
+
+\item{fishing_mean_duration}{The average duration of fishing trips.}
+
+\item{fishing_mean_trips}{The average number of distinct fishing trips per year.}
+
+\item{catchability_mean}{The average catchability.}
+
+\item{catchability_var}{The variance of qlogis(catchability)}
+
+\item{fishing_area_mean}{The average area fished per step.}
+
+\item{fishing_area_var}{The variance of area fished per step.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
