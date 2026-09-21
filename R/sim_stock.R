@@ -245,19 +245,8 @@ sim_growth<- \(
 #' @param geometry
 #'     An sf object with polygon geometries describing the geometry of the stock
 #'     area.
-#' @param mean_fishing_mortality
-#'     The typical fishing mortality rate.
-#' @param fishing_selectivity
-#'     A n_class vector giving the gear selectivity of the fishery. Elements
-#'         should be be between 0 and 1.
 #' @param mean_natural_mortality
 #'     The typical natural mortality rate.
-#' @param p_fishing_year 
-#'     Parameters (height, stretch) governing yearly variability in fishing 
-#'     mortality.
-#' @param p_fishing_geometry 
-#'     Parameters (height, stretch) governing spatial variability in fishing 
-#'     mortality.
 #' @param p_natural_class 
 #'     Parameters (height, stretch) governing class variability in natural 
 #'     mortality.
@@ -273,10 +262,6 @@ sim_growth<- \(
 #' 
 #' @return
 #'     A list with elements
-#'     * total_mortality A n_class x n_age x n_year x n_geom stars array giving
-#'           the yearly total mortality rate.
-#'     * fishing_mortality A n_class x n_year x n_geom stars array giving the
-#'           yearly fishing mortality rate.
 #'     * natural_mortality A n_class x n_age x n_year x n_geom stars array
 #'           giving the yearly natural mortality rate.
 #'     * growth_splines A list with splines governing variability.
@@ -288,11 +273,7 @@ sim_mortality<- \(
     n_age,
     n_cohort,
     geometry,
-    mean_fishing_mortality,
-    fishing_selectivity,
     mean_natural_mortality,
-    p_fishing_year = c(0.3, 6),
-    p_fishing_geometry = c(0.3, 6),
     p_natural_class = c(0.3, 2),
     p_natural_age = c(0.3, 2),
     p_natural_year = c(0.3, 2),
@@ -306,12 +287,6 @@ sim_mortality<- \(
     geom_spline<- geometry |> sf::st_centroid() |> sf::st_coordinates() |>
         nnspline::create_nnspline()
 
-    fishing_year_spline<- year_spline |>
-        nnspline::update_spline(parameters = p_fishing_year) |>
-        nnspline::rspline(center = TRUE)
-    fishing_geometry_spline<- geom_spline |>
-        nnspline::update_spline(parameters = p_fishing_geometry) |>
-        nnspline::rspline(center = TRUE)
     natural_class_spline<- class_spline |>
         nnspline::update_spline(parameters = p_natural_class) |>
         nnspline::rspline(center = TRUE)
@@ -325,52 +300,14 @@ sim_mortality<- \(
         nnspline::update_spline(parameters = p_natural_geometry) |>
         nnspline::rspline(center = TRUE)
    
-    # Mortality<- log(selectivity) + exp(log(mu_mort) + year + geom)
-    fishing_mortality<- fishing_year_spline$values |>
-        outer(
-            fishing_geometry_spline$values,
-            `+`
-        ) |>
-        exp() |>
-        (\(x) x * mean_fishing_mortality)() |>
-        outer(
-            X = log(fishing_selectivity),
-            Y = _,
-            `+`
-        )
-
     natural_mortality<- exp(natural_class_spline$values) |>
         outer(exp(natural_age_spline$values)) |>
         outer(exp(natural_year_spline$values)) |>
         outer(exp(natural_geometry_spline$values)) |>
         (\(x) mean_natural_mortality * x)()
-    
-    total_mortality<- sweep(
-        natural_mortality, 
-        c(1, 3:4), 
-        fishing_mortality,
-        `+`
-    )
 
     return(
         list(
-            total_mortality = stars::st_as_stars(
-                list(total_mortality = total_mortality),
-                dimensions = stars::st_dimensions(
-                    class = seq_len(n_class),
-                    age = seq_len(n_age),
-                    year = seq_len(n_year),
-                    geometry = geometry |> sf::st_geometry()
-                )
-            ),
-            fishing_mortality = stars::st_as_stars(
-                list(fishing_mortality = fishing_mortality),
-                dimensions = stars::st_dimensions(
-                    class = seq_len(n_class),
-                    year = seq_len(n_year),
-                    geometry = geometry |> sf::st_geometry()
-                )
-            ),
             natural_mortality = stars::st_as_stars(
                 list(natural_mortality = natural_mortality),
                 dimensions = stars::st_dimensions(
@@ -381,8 +318,6 @@ sim_mortality<- \(
                 )
             ),
             mortality_splines = list(
-                fishing_year = fishing_year_spline,
-                fishing_geometry = fishing_geometry_spline,
                 natural_class = natural_class_spline,
                 natural_age = natural_age_spline,
                 natural_year = natural_year_spline,
@@ -406,7 +341,7 @@ sim_mortality<- \(
 #'     transition matrix.
 #' @param mortality
 #'     The output of sim_mortality, or a list with a n_class x n_age x n_year x
-#'     n_geom stars array named "total_mortality" giving the total mortality 
+#'     n_geom stars array named "natural_mortality" giving the natural mortality 
 #'     rate.
 #' @param fishing_mean_time
 #'     The average number of steps spent in each polygon.
@@ -442,12 +377,12 @@ sim_abundance<- \(
     fishing_area_mean,
     fishing_area_var
 ) {
-    n_class<- dim(mortality$total_mortality)[1]
-    n_age<- dim(mortality$total_mortality)[2]
-    n_year<- dim(mortality$total_mortality)[3]
+    n_class<- dim(mortality$natural_mortality)[1]
+    n_age<- dim(mortality$natural_mortality)[2]
+    n_year<- dim(mortality$natural_mortality)[3]
     n_cohort<- convert_ayc(age = n_age, year = n_year)
-    n_geom<- dim(mortality$total_mortality)[4]
-    geom<- sf::st_geometry(mortality$total_mortality)
+    n_geom<- dim(mortality$natural_mortality)[4]
+    geom<- sf::st_geometry(mortality$natural_mortality) |> sf::st_sf()
 
     fishing_track<-
         fishing_catch<-
@@ -475,7 +410,7 @@ sim_abundance<- \(
             fishing_track = fishing_track[[y]],
             fish = abundance[, , y, 1, ] |> (\(x) {x[is.na(x)]<- 0; x})(),
             selectivity = fishing_selectivity,
-            geometry = geometry,
+            geometry = geom,
             catchability_mean = catchability_mean,
             catchability_var = catchability_var,
             area_mean = fishing_area_mean,
@@ -509,74 +444,20 @@ sim_abundance<- \(
                     age = seq_len(n_age),
                     year = seq_len(n_year),
                     season = c("prefishing", "postfishing"),
-                    geometry = mortality$total_mortality |> sf::st_geometry()
+                    geometry = geom |> sf::st_geometry()
                 )
             ),
             fishing_track = fishing_track,
             fishing_catch = fishing_catch,
-            fishing_catch_by_geom = fishing_catch_by_geom,
+            fishing_catch_by_geom = fishing_catch_by_geom |>
+                c(list(along = "year")) |>
+                do.call(c, args = _) |>
+                aperm(c(1:2, 4, 3)),
             fishing_catchability = fishing_catchability,
             fishing_area = fishing_area
         )
     )
 }
-
-
-
-# #' @param mean_recruitment_composition
-# #'     See ?sim_recruitment.
-# #' @param mean_recruit_abundance
-# #'     See ?sim_recruitment.
-# #' @param mean_growth_rate
-# #'     See ?sim_growth.
-# #' @param mean_fishing_mortality
-# #'     See ?sim_mortality.
-# #' @param mean_natural_mortality
-# #'     See ?sim_mortality.
-# #' @param fishing_mean_time
-# #'     See ?sim_abundance
-# #' @param fishing_mean_duration
-# #'     See ?sim_abundance
-# #' @param fishing_mean_tracks
-# #'     See ?sim_abundance
-# #' @param fishing_selectivity
-# #'     See ?sim_abundance
-# #' @param catchability_mean
-# #'     See ?sim_abundance
-# #' @param catchability_var
-# #'     See ?sim_abundance
-# #' @param fishing_area_mean
-# #'     See ?sim_abundance
-# #' @param fishing_area_var
-# #'     See ?sim_abundance
-# #' @param p_composition_cohort
-# #'     See ?sim_recruitment
-# #' @param p_composition_geometry
-# #'     See ?sim_recruitment
-# #' @param p_abundance_cohort
-# #'     See ?sim_recruitment
-# #' @param p_abundance_geometry
-# #'     See ?sim_recruitment
-# #' @param p_growth_class
-# #'     See ?sim_growth
-# #' @param p_growth_age
-# #'     See ?sim_growth
-# #' @param p_growth_year
-# #'     See ?sim_growth
-# #' @param p_growth_geometry
-# #'     See ?sim_growth
-# #' @param p_fishing_year
-# #'     See ?sim_mortality
-# #' @param p_fishing_geometry
-# #'     See ?sim_mortality
-# #' @param p_natural_class
-# #'     See ?sim_mortality
-# #' @param p_natural_age
-# #'     See ?sim_mortality
-# #' @param p_natural_year
-# #'     See ?sim_mortality
-# #' @param p_natural_geometry
-# #'     See ?sim_mortality
 
 
 
@@ -608,7 +489,6 @@ sim_population<- function(
     mean_recruitment_composition,
     mean_recruit_abundance,
     mean_growth_rate,
-    mean_fishing_mortality,
     mean_natural_mortality,
     fishing_mean_time,
     fishing_mean_duration,
@@ -626,8 +506,6 @@ sim_population<- function(
     p_growth_age = c(0.3, 2),
     p_growth_year = c(0.3, 2),
     p_growth_geometry = c(0.3, 2),
-    p_fishing_year = c(0.3, 6),
-    p_fishing_geometry = c(0.3, 6),
     p_natural_class = c(0.3, 2),
     p_natural_age = c(0.3, 2),
     p_natural_year = c(0.3, 2),
@@ -660,11 +538,7 @@ sim_population<- function(
         n_age = n_age,
         n_cohort = n_cohort,
         geometry = geometry,
-        mean_fishing_mortality = mean_fishing_mortality,
-        fishing_selectivity = fishing_selectivity,
         mean_natural_mortality = mean_natural_mortality,
-        p_fishing_year = p_fishing_year,
-        p_fishing_geometry = p_fishing_geometry,
         p_natural_class = p_natural_class,
         p_natural_age = p_natural_age,
         p_natural_year = p_natural_year,

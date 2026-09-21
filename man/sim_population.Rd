@@ -12,7 +12,6 @@ sim_population(
   mean_recruitment_composition,
   mean_recruit_abundance,
   mean_growth_rate,
-  mean_fishing_mortality,
   mean_natural_mortality,
   fishing_mean_time,
   fishing_mean_duration,
@@ -30,8 +29,6 @@ sim_population(
   p_growth_age = c(0.3, 2),
   p_growth_year = c(0.3, 2),
   p_growth_geometry = c(0.3, 2),
-  p_fishing_year = c(0.3, 6),
-  p_fishing_geometry = c(0.3, 6),
   p_natural_class = c(0.3, 2),
   p_natural_age = c(0.3, 2),
   p_natural_year = c(0.3, 2),
@@ -54,8 +51,6 @@ sum to  1.}
 
 \item{mean_growth_rate}{The typical growth rate from one class to the next.}
 
-\item{mean_fishing_mortality}{The typical fishing mortality rate.}
-
 \item{mean_natural_mortality}{The typical natural mortality rate.}
 
 \item{fishing_mean_time}{The average number of steps spent in each polygon.}
@@ -63,9 +58,6 @@ sum to  1.}
 \item{fishing_mean_duration}{The average duration of fishing trips.}
 
 \item{fishing_mean_trips}{The average number of distinct fishing trips per year.}
-
-\item{fishing_selectivity}{A n_class vector giving the gear selectivity of the fishery. Elements
-should be be between 0 and 1.}
 
 \item{catchability_mean}{The average catchability.}
 
@@ -91,12 +83,6 @@ composition.}
 \item{p_growth_year}{Parameters (height, stretch) governing yearly variability in growth.}
 
 \item{p_growth_geometry}{Parameters (height, stretch) governing spatial variability in growth.}
-
-\item{p_fishing_year}{Parameters (height, stretch) governing yearly variability in fishing
-mortality.}
-
-\item{p_fishing_geometry}{Parameters (height, stretch) governing spatial variability in fishing
-mortality.}
 
 \item{p_natural_class}{Parameters (height, stretch) governing class variability in natural
 mortality.}

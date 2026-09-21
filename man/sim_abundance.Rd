@@ -27,7 +27,7 @@ n_age x n_geom stars array named "growth_matrix" giving the yearly growth
 transition matrix.}
 
 \item{mortality}{The output of sim_mortality, or a list with a n_class x n_age x n_year x
-n_geom stars array named "total_mortality" giving the total mortality
+n_geom stars array named "natural_mortality" giving the natural mortality
 rate.}
 
 \item{fishing_mean_time}{The average number of steps spent in each polygon.}

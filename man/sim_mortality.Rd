@@ -9,11 +9,7 @@ sim_mortality(
   n_age,
   n_cohort,
   geometry,
-  mean_fishing_mortality,
-  fishing_selectivity,
   mean_natural_mortality,
-  p_fishing_year = c(0.3, 6),
-  p_fishing_geometry = c(0.3, 6),
   p_natural_class = c(0.3, 2),
   p_natural_age = c(0.3, 2),
   p_natural_year = c(0.3, 2),
@@ -30,18 +26,7 @@ sim_mortality(
 \item{geometry}{An sf object with polygon geometries describing the geometry of the stock
 area.}
 
-\item{mean_fishing_mortality}{The typical fishing mortality rate.}
-
-\item{fishing_selectivity}{A n_class vector giving the gear selectivity of the fishery. Elements
-should be be between 0 and 1.}
-
 \item{mean_natural_mortality}{The typical natural mortality rate.}
-
-\item{p_fishing_year}{Parameters (height, stretch) governing yearly variability in fishing
-mortality.}
-
-\item{p_fishing_geometry}{Parameters (height, stretch) governing spatial variability in fishing
-mortality.}
 
 \item{p_natural_class}{Parameters (height, stretch) governing class variability in natural
 mortality.}
@@ -57,10 +42,6 @@ mortality.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
-* total_mortality A n_class x n_age x n_year x n_geom stars array giving
-      the yearly total mortality rate.
-* fishing_mortality A n_class x n_year x n_geom stars array giving the
-      yearly fishing mortality rate.
 * natural_mortality A n_class x n_age x n_year x n_geom stars array
       giving the yearly natural mortality rate.
 * growth_splines A list with splines governing variability.
