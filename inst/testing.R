@@ -3,7 +3,7 @@ library(tmap)
 devtools::load_all()
 
 n_class<- 3
-n_age<- 5
+n_age<- 10
 n_cohort<- 10
 stock<- sim_population(
     n_class = n_class,
@@ -15,13 +15,13 @@ stock<- sim_population(
     mean_growth_rate = 0.3,
     mean_natural_mortality = 0.1,
     fishing_mean_time = 40,
-    fishing_mean_duration = 5000,
+    fishing_mean_duration = 10000,
     fishing_mean_trips = 4,
     fishing_selectivity = seq(0.05, 0.95, length.out = n_class) |> round(2),
     catchability_mean = 0.4,
     catchability_var = 0.05,
-    fishing_area_mean = 0.05,
-    fishing_area_var = 0.01,
+    fishing_area_mean = 0.1,
+    fishing_area_var = 0.05,
     p_composition_cohort = c(0.3, 6),
     p_composition_geometry = c(0.3, 6),
     p_abundance_cohort = c(0.3, 6),
@@ -37,13 +37,25 @@ stock<- sim_population(
 )
 
 
+survey<- sim_survey(
+    stock$abundance[, , , , 2, drop = TRUE],
+    selectivity = c(0.2, 0.5, 1) * 0 + 1,
+    stations_per_year = 50,
+    catchability_mean = 0.02,
+    catchability_power = 1.2,
+    catchability_dispersion = 1,
+    composition_concentration = 100
+)
+
+
 
 tm_shape(stock$abundance[, , , 10, 2, , drop = TRUE]) +
     tm_fill(fill = "abundance", fill.scale = tm_scale_continuous())
 
 biomass<- stock$abundance |>
     sweep(1, c(0.2, 1, 2), `*`) |>
-    (\(x) {names(x)<- "biomass"; x})()
+    (\(x) {names(x)<- "biomass"; x})() |>
+    exchange_cohort_year()
 cbiomass<- biomass |>
     stars::st_apply(3:5, sum) |>
     (\(x) {names(x)<- "biomass"; x})()

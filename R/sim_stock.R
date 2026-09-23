@@ -349,6 +349,8 @@ sim_mortality<- \(
 #'     The average duration of fishing trips.
 #' @param fishing_mean_trips
 #'     The average number of distinct fishing trips per year.
+#' @param fishing_selectivity
+#'     A numeric vector giving the fishing selectivity by class.
 #' @param catchability_mean
 #'     The average catchability.
 #' @param catchability_var
@@ -390,7 +392,10 @@ sim_abundance<- \(
         fishing_catchability<- 
         fishing_area<- vector("list", n_year)
 
-    abundance<- array(NA, dim = c(n_class, n_age, n_year, 2, n_geom))
+    abundance<- array(
+        NA, 
+        dim = c(n_class, n_age, n_year, season = 2, n_geom)
+    )
     abundance[, 1, seq_len(n_cohort), 1, ]<- recruitment$recruits$recruits
     for( y in seq_len(n_year) ) {
         # fish stuff out

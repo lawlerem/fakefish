@@ -59,6 +59,8 @@ sum to  1.}
 
 \item{fishing_mean_trips}{The average number of distinct fishing trips per year.}
 
+\item{fishing_selectivity}{A numeric vector giving the fishing selectivity by class.}
+
 \item{catchability_mean}{The average catchability.}
 
 \item{catchability_var}{The variance of qlogis(catchability)}
