@@ -13,6 +13,7 @@ export(sim_mortality)
 export(sim_population)
 export(sim_recruitment)
 export(sim_survey)
+export(stratify_survey)
 importFrom(Matrix,expm)
 importFrom(elhelpers,
   crl,

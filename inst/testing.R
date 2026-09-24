@@ -3,8 +3,8 @@ library(tmap)
 devtools::load_all()
 
 n_class<- 3
-n_age<- 10
-n_cohort<- 10
+n_age<- 5
+n_cohort<- 15
 stock<- sim_population(
     n_class = n_class,
     n_age = n_age,
