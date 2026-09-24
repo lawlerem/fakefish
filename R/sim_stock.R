@@ -408,7 +408,7 @@ fake_abundance<- \(
                 geometry = geom,
                 target = target,
                 mean_time = fishing_mean_time * runif(1, 0.9, 1.1),
-                duration = fishing_mean_duration * runif(1, 0.9, 1.1)
+                duration = ceiling(fishing_mean_duration * runif(1, 0.9, 1.1))
             )) |>
             do.call(c, args = _)
         catch<- fish_track(
