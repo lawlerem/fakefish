@@ -29,7 +29,7 @@
 #'           giving the combined survey count for each year.
 #' 
 #' @export
-sim_survey<- \(
+fake_survey<- \(
     target,
     selectivity,
     stations_per_year,
@@ -117,7 +117,7 @@ sim_survey<- \(
 
 #' Stratify survey stations by class
 #' 
-#' @param survey The output of sim_survey
+#' @param survey The output of fake_survey
 #' @param n_per_class The (maximum) number of samples per class at each station.
 #' 
 #' @return 

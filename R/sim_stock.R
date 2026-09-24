@@ -30,7 +30,7 @@
 #'     
 #' 
 #' @export
-sim_recruitment<- \(
+fake_recruitment<- \(
     n_class, 
     n_cohort,
     geometry,
@@ -142,7 +142,7 @@ sim_recruitment<- \(
 #'     
 #' 
 #' @export
-sim_growth<- \(
+fake_growth<- \(
     n_class,
     n_age,
     n_cohort,
@@ -268,7 +268,7 @@ sim_growth<- \(
 #'     
 #' 
 #' @export
-sim_mortality<- \(
+fake_mortality<- \(
     n_class,
     n_age,
     n_cohort,
@@ -333,14 +333,14 @@ sim_mortality<- \(
 #' Simulate mortality parameters for a fish stock
 #' 
 #' @param recruitment
-#'     The output of sim_recruitment, or a list with a n_class x n_cohort x
+#'     The output of fake_recruitment, or a list with a n_class x n_cohort x
 #'     n_geom array named "recruits" giving recruit abundance.
 #' @param growth
-#'     The output of sim_growth, or a list with a n_class x n_class x n_age x 
+#'     The output of fake_growth, or a list with a n_class x n_class x n_age x 
 #'     n_age x n_geom stars array named "growth_matrix" giving the yearly growth
 #'     transition matrix.
 #' @param mortality
-#'     The output of sim_mortality, or a list with a n_class x n_age x n_year x
+#'     The output of fake_mortality, or a list with a n_class x n_age x n_year x
 #'     n_geom stars array named "natural_mortality" giving the natural mortality 
 #'     rate.
 #' @param fishing_mean_time
@@ -366,7 +366,7 @@ sim_mortality<- \(
 #'           stock abundance.
 #' 
 #' @export
-sim_abundance<- \(
+fake_abundance<- \(
     recruitment,
     growth,
     mortality,
@@ -404,7 +404,7 @@ sim_abundance<- \(
             apply(3, sum, na.rm = TRUE)
         fishing_track[[y]]<- (1 + rpois(1, fishing_mean_trips)) |>
             seq_len() |>
-            lapply(\(i) generate_fishing_track(
+            lapply(\(i) fake_fishing_track(
                 geometry = geom,
                 target = target,
                 mean_time = fishing_mean_time * runif(1, 0.9, 1.1),
@@ -476,17 +476,17 @@ sim_abundance<- \(
 #'     The number of cohorts tracked in the stock.
 #' @param geometry
 #'     An sf object with polygon geometries describing the fishing area.
-#' @inheritParams sim_recruitment
-#' @inheritParams sim_growth
-#' @inheritParams sim_mortality
-#' @inheritParams sim_abundance
+#' @inheritParams fake_recruitment
+#' @inheritParams fake_growth
+#' @inheritParams fake_mortality
+#' @inheritParams fake_abundance
 #' 
 #' @return
-#'     A list concatenating the results of sim_recruitment, sim_growth,
-#'     sim_mortality, and sim_abundance.
+#'     A list concatenating the results of fake_recruitment, fake_growth,
+#'     fake_mortality, and fake_abundance.
 #' 
 #' @export
-sim_population<- function(
+fake_population<- function(
     n_class,
     n_age,
     n_cohort,
@@ -516,7 +516,7 @@ sim_population<- function(
     p_natural_year = c(0.3, 2),
     p_natural_geometry = c(0.3, 2)
 ) {
-    recruitment<- sim_recruitment(
+    recruitment<- fake_recruitment(
         n_class = n_class,
         n_cohort = n_cohort,
         geometry = geometry,
@@ -527,7 +527,7 @@ sim_population<- function(
         p_abundance_cohort = p_abundance_cohort,
         p_abundance_geometry = p_abundance_geometry
     )
-    growth<- sim_growth(
+    growth<- fake_growth(
         n_class = n_class,
         n_age = n_age,
         n_cohort = n_cohort,
@@ -538,7 +538,7 @@ sim_population<- function(
         p_growth_year = p_growth_year,
         p_growth_geometry = p_growth_geometry
     )
-    mortality<- sim_mortality(
+    mortality<- fake_mortality(
         n_class = n_class,
         n_age = n_age,
         n_cohort = n_cohort,
@@ -549,7 +549,7 @@ sim_population<- function(
         p_natural_year = p_natural_year,
         p_natural_geometry = p_natural_geometry
     )
-    abundance<- sim_abundance(
+    abundance<- fake_abundance(
         recruitment = recruitment,
         growth = growth,
         mortality = mortality,

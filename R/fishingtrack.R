@@ -21,7 +21,7 @@
 #'     fished in each geometry is proportional to the target surface.
 #' 
 #' @export
-generate_fishing_track<- \(
+fake_fishing_track<- \(
     geometry,
     target,
     mean_time = 1,

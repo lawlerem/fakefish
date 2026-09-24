@@ -7,7 +7,7 @@
 stratify_survey(survey, n_per_class)
 }
 \arguments{
-\item{survey}{The output of sim_survey}
+\item{survey}{The output of fake_survey}
 
 \item{n_per_class}{The (maximum) number of samples per class at each station.}
 }
