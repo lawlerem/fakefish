@@ -34,8 +34,7 @@ fake_survey<- \(
     selectivity,
     stations_per_year,
     catchability_mean,
-    catchability_power,
-    catchability_dispersion,
+    catchability_var,
     composition_concentration
 ) {
     n_class<- dim(target)["class"]
@@ -59,11 +58,15 @@ fake_survey<- \(
             year = rep(seq_len(n_year), each = stations_per_year),
             geometry = _
         )
-    stations$n<- mgcv::rTweedie(
-            catchability_mean * combined_target$sum[as.matrix(stations)],
-            p = catchability_power,
-            phi = catchability_dispersion
-        ) |> 
+    
+    stations$catchability<- rnorm(
+            nrow(stations),
+            qlogis(catchability_mean),
+            catchability_var
+        ) |>
+        plogis()
+    stations$n<- (stations$catchability * 
+        combined_target$sum[as.matrix(stations)[, 1:2]]) |> 
         round()
     survey<- array(NA, dim = c(n_class, n_age, nrow(stations)))
     survey_by_geom<- array(0, dim = c(n_class, n_age, n_year, n_geom))

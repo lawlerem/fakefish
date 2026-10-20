@@ -120,7 +120,10 @@ fake_recruitment<- \(
 #'     An sf object with polygon geometries describing the geometry of the stock
 #'     area.
 #' @param mean_growth_rate
-#'     The typical growth rate from one class to the next.
+#'     The typical growth rate from one class to the next. If it has length 1,
+#'     then the class-specific growth rates will simulated from a spline. If it
+#'     has length equal to (n_class - 1), the class-specific growth rates will 
+#'     be equal to the values of mean_growth_rate.
 #' @param p_growth_class 
 #'     Parameters (height, stretch) governing class variability in growth.
 #' @param p_growth_age 
@@ -148,6 +151,7 @@ fake_growth<- \(
     n_cohort,
     geometry,
     mean_growth_rate,
+    growth_class,
     p_growth_class = c(0.3, 2),
     p_growth_age = c(0.3, 2),
     p_growth_year = c(0.3, 2),
@@ -179,9 +183,13 @@ fake_growth<- \(
         outer(exp(geom_spline$values))
 
     class_growth_rate<- matrix(0, nrow = n_class, ncol = n_class)
-    diag(class_growth_rate)<- c(
-        -mean_growth_rate * exp(class_spline$values), 0
-    )
+    if( length(mean_growth_rate == 1) ) {
+        diag(class_growth_rate)<- c(
+            -mean_growth_rate * exp(class_spline$values), 0
+        )
+    } else if( length(mean_growth_rate) == (n_class - 1) ) {
+        diag(class_growth_rate)<- c(-mean_growth_rate, 0)
+    }
     subdiagonal<- cbind(seq(n_class - 1) + 1, seq(n_class - 1))
     class_growth_rate[subdiagonal]<- -head(diag(class_growth_rate), -1)
 

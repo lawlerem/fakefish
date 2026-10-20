@@ -49,7 +49,10 @@ sum to  1.}
 
 \item{mean_recruit_abundance}{The typical total abudance of the recruit class.}
 
-\item{mean_growth_rate}{The typical growth rate from one class to the next.}
+\item{mean_growth_rate}{The typical growth rate from one class to the next. If it has length 1,
+then the class-specific growth rates will simulated from a spline. If it
+has length equal to (n_class - 1), the class-specific growth rates will
+be equal to the values of mean_growth_rate.}
 
 \item{mean_natural_mortality}{The typical natural mortality rate.}
 

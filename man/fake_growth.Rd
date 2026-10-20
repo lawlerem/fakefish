@@ -10,6 +10,7 @@ fake_growth(
   n_cohort,
   geometry,
   mean_growth_rate,
+  growth_class,
   p_growth_class = c(0.3, 2),
   p_growth_age = c(0.3, 2),
   p_growth_year = c(0.3, 2),
@@ -26,7 +27,10 @@ fake_growth(
 \item{geometry}{An sf object with polygon geometries describing the geometry of the stock
 area.}
 
-\item{mean_growth_rate}{The typical growth rate from one class to the next.}
+\item{mean_growth_rate}{The typical growth rate from one class to the next. If it has length 1,
+then the class-specific growth rates will simulated from a spline. If it
+has length equal to (n_class - 1), the class-specific growth rates will
+be equal to the values of mean_growth_rate.}
 
 \item{p_growth_class}{Parameters (height, stretch) governing class variability in growth.}
 
