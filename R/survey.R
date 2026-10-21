@@ -5,8 +5,10 @@
 #'     surface to survey.
 #' @param selectivity
 #'     A numeric vector giving the survey selectivity by class.
-#' @param stations_per_year
-#'     The number of survey stations per year.
+#' @param stations
+#'     Either numeric or an sf data.frame with a year columnand point 
+#'     geometries. If numeric, the number of survey stations per year; if an sf 
+#'     object, the survey years and locations.
 #' @param catchability_mean
 #'     The mean catchability of the survey.
 #' @param catchability_power
@@ -32,7 +34,7 @@
 fake_survey<- \(
     target,
     selectivity,
-    stations_per_year,
+    stations,
     catchability_mean,
     catchability_var,
     composition_concentration
@@ -45,19 +47,32 @@ fake_survey<- \(
     selected_target<- target |> sweep(1, selectivity, `*`)
     combined_target<- selected_target |> stars::st_apply(3:4, sum, na.rm = TRUE)
     
-    stations<- target |>
-        sf::st_geometry() |>
-        sf::st_area() |>
-        (\(x) sample(
-            length(x), 
-            size = stations_per_year * n_year,
-            replace = TRUE,
-            prob = x
-        ))() |>
-        data.frame(
-            year = rep(seq_len(n_year), each = stations_per_year),
-            geometry = _
-        )
+    if( is.numeric(stations) ) {
+        stations<- target |>
+            sf::st_geometry() |>
+            sf::st_area() |>
+            (\(x) sample(
+                length(x), 
+                size = stations_per_year * n_year,
+                replace = TRUE,
+                prob = x
+            ))() |>
+            data.frame(
+                year = rep(seq_len(n_year), each = stations_per_year),
+                geometry = _
+            )
+    } else if( is(stations, "sf") & "year" %in% colnames(stations) ) {
+        stations<- data.frame(
+            year = stations$year,
+            geometry = stations |>
+                sf::st_intersects(target) |>
+                lapply(`[[`, 1) |>
+                do.call(c, args = _)
+        )   
+    } else {
+        stop("Argument 'stations' must be numeric, or an sf object with a year
+        column and point geometries.")
+    }
     
     stations$catchability<- rnorm(
             nrow(stations),
@@ -133,7 +148,7 @@ fake_survey<- \(
 #'           giving the combined stratified survey count for each year.
 #' 
 #' @export
-stratify_survey<- \(
+stratify_survey_stations<- \(
     survey,
     n_per_class
 ) {
@@ -142,7 +157,7 @@ stratify_survey<- \(
     n_survey<- dim(survey$survey)["station"]
 
     strat_survey<- survey$survey[[1]]
-    strat_survey_by_geom<- survey$survey_by_geometry[[1]]
+    strat_survey_by_geom<- 0 * survey$survey_by_geometry[[1]]
     for( i in seq_len(n_survey) ) {
         ss<- strat_survey[, , i]
         for( c in seq_len(n_class) ) {
@@ -158,6 +173,65 @@ stratify_survey<- \(
         y<- survey$stations$year[[i]]
         g<- survey$stations$geometry[[i]]
         strat_survey_by_geom[, , y, g]<- strat_survey_by_geom[, , y, g] + ss
+    }
+
+    return(
+        list(
+            stations = survey$stations,
+            survey = stars::st_as_stars(
+                list(count = strat_survey),
+                dimensions = stars::st_dimensions(survey$survey)
+            ),
+            survey_by_geometry = stars::st_as_stars(
+                list(count = strat_survey_by_geom),
+                dimensions = stars::st_dimensions(survey$survey_by_geometry)
+            )
+        )
+    )
+}
+
+
+#' Stratify survey stations by class
+#' 
+#' @param survey The output of fake_survey
+#' @param n_per_class The (maximum) number of samples per class at each station.
+#' 
+#' @return 
+#'     A list with elements
+#'     * stations A data.frame giving the year and geometry for each survey 
+#'           station.
+#'     * survey A n_class x n_age x n_survey stars array giving the stratified
+#'           survey count for each survey station.
+#'     * survey_by_geometry A n_class x n_age x n_year x n_geometry stars array
+#'           giving the combined stratified survey count for each year.
+#' 
+#' @export
+stratify_combine_survey<- \(
+    survey,
+    n_per_class
+) {
+    n_class<- dim(survey$survey)["class"]
+    n_age<- dim(survey$survey)["age"]
+    n_survey<- dim(survey$survey)["station"]
+
+    strat_survey<- survey$survey[[1]]
+    strat_survey_by_geom<- 0 * survey$survey_by_geometry[[1]]
+    for( class in seq_len(n_class) ) {
+        ss<- strat_survey[class, , ]
+        x<- array(0, dim = c(n_age, n_survey))
+        while( sum(x) < n_per_class[class] & sum(ss > 0) ) {
+            idx<- sample(length(x), 1, FALSE, prob = ss)
+            x[idx]<- x[idx] + 1
+            ss[idx]<- ss[idx] - 1
+        }
+
+        strat_survey[class, , ]<- x
+    }
+    for( i in seq(nrow(survey$stations)) ) {
+        y<- survey$stations$year[[i]]
+        g<- survey$stations$geometry[[i]]
+        strat_survey_by_geom[, , y, g]<- strat_survey_by_geom[, , y, g] +
+            strat_survey[, , i]
     }
 
     return(

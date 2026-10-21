@@ -7,10 +7,9 @@
 fake_survey(
   target,
   selectivity,
-  stations_per_year,
+  stations,
   catchability_mean,
-  catchability_power,
-  catchability_dispersion,
+  catchability_var,
   composition_concentration
 )
 }
@@ -20,18 +19,20 @@ surface to survey.}
 
 \item{selectivity}{A numeric vector giving the survey selectivity by class.}
 
-\item{stations_per_year}{The number of survey stations per year.}
+\item{stations}{Either numeric or an sf data.frame with a year columnand point
+geometries. If numeric, the number of survey stations per year; if an sf
+object, the survey years and locations.}
 
 \item{catchability_mean}{The mean catchability of the survey.}
+
+\item{composition_concentration}{The concentration parameter in a Dirichlet distribution for the survey
+catch composition. Must be positive.}
 
 \item{catchability_power}{The power parameter in a Tweedie distribution for survey catch. Must be
 between 1 and 2.}
 
 \item{catchability_dispersion}{The dispersion parameter in a Tweedie distribution for survey catch. Must
 be positive.}
-
-\item{composition_concentration}{The concentration parameter in a Dirichlet distribution for the survey
-catch composition. Must be positive.}
 }
 \value{
 \if{html}{\out{<div class="sourceCode">}}\preformatted{A list with elements
