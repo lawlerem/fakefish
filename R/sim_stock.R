@@ -407,7 +407,8 @@ fake_abundance<- \(
     abundance[, 1, seq_len(n_cohort), 1, ]<- recruitment$recruits$recruits
     for( y in seq_len(n_year) ) {
         # fish stuff out
-        target<- abundance[ , , y, 1, ] |>
+        target<- abundance[ , , y, 1, , drop = FALSE] |>
+            abind::adrop(drop = c(FALSE, FALSE, TRUE, TRUE, FALSE)) |>
             sweep(1, fishing_selectivity, `*`) |>
             apply(3, sum, na.rm = TRUE)
         fishing_track[[y]]<- (1 + rpois(1, fishing_mean_trips)) |>
@@ -421,7 +422,9 @@ fake_abundance<- \(
             do.call(c, args = _)
         catch<- fish_track(
             fishing_track = fishing_track[[y]],
-            fish = abundance[, , y, 1, ] |> (\(x) {x[is.na(x)]<- 0; x})(),
+            fish = abundance[, , y, 1, , drop = FALSE] |>
+                abind::adrop(drop = c(FALSE, FALSE, TRUE, TRUE, FALSE)) |> 
+                (\(x) {x[is.na(x)]<- 0; x})(),
             selectivity = fishing_selectivity,
             geometry = geom,
             catchability_mean = catchability_mean,
@@ -433,7 +436,7 @@ fake_abundance<- \(
         fishing_catch_by_geom[[y]]<- catch$catch_by_geometry
         fishing_catchability[[y]]<- catch$catchability
         fishing_area[[y]]<- catch$area
-        abundance[, , y, 2, ]<- (abundance[, , y, 1, ] - catch$catch_by_geometry$catch) |>
+        abundance[, , y, 2, ]<- (abundance[, , y, 1, ] - drop(catch$catch_by_geometry$catch)) |>
             sapply(max, 0)
 
         for( a in seq_len(n_age - 1) ) {

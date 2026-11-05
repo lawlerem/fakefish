@@ -81,7 +81,7 @@ fake_survey<- \(
         ) |>
         plogis()
     stations$n<- (stations$catchability * 
-        combined_target$sum[as.matrix(stations)[, 1:2]]) |> 
+        combined_target$sum[as.matrix(stations)[, 1:2, drop = FALSE]]) |> 
         round()
     survey<- array(NA, dim = c(n_class, n_age, nrow(stations)))
     survey_by_geom<- array(0, dim = c(n_class, n_age, n_year, n_geom))
