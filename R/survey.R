@@ -136,54 +136,51 @@ fake_survey<- \(
 #' Stratify survey stations by class
 #' 
 #' @param survey The output of fake_survey
-#' @param n_per_class The (maximum) number of samples per class at each station.
+#' @param n_per_station The (maximum) number of samples per station.
 #' 
 #' @return 
 #'     A list with elements
 #'     * stations A data.frame giving the year and geometry for each survey 
 #'           station.
-#'     * survey A n_class x n_age x n_survey stars array giving the stratified
+#'     * survey A n_class x n_age x n_survey stars array giving the subsampled
 #'           survey count for each survey station.
 #'     * survey_by_geometry A n_class x n_age x n_year x n_geometry stars array
-#'           giving the combined stratified survey count for each year.
+#'           giving the combined subsampled survey count for each year.
 #' 
 #' @export
-stratify_survey_stations<- \(
+subsample_survey_stations<- \(
     survey,
-    n_per_class
+    n_per_station
 ) {
     n_class<- dim(survey$survey)["class"]
     n_age<- dim(survey$survey)["age"]
     n_survey<- dim(survey$survey)["station"]
 
-    strat_survey<- survey$survey[[1]]
-    strat_survey_by_geom<- 0 * survey$survey_by_geometry[[1]]
+    sub_survey<- survey$survey[[1]]
+    sub_survey_by_geom<- 0 * survey$survey_by_geometry[[1]]
     for( i in seq_len(n_survey) ) {
-        ss<- strat_survey[, , i]
-        for( c in seq_len(n_class) ) {
-            x<- numeric(n_age)
-            while( sum(x) < n_per_class & sum(ss[c, ] > 0) ) {
-                idx<- sample(n_age, 1, FALSE, prob = ss[c, ])
-                x[idx]<- x[idx] + 1
-                ss[c, idx]<- ss[c, idx] - 1
-            }
-            ss[c, ]<- x
+        ss<- sub_survey[, , i]
+        x<- 0 * ss
+        while( sum(x) < n_per_station & sum(ss > 0)) {
+            idx<- sample(n_age * n_class, 1, FALSE, prob = ss)
+            x[idx]<- x[idx] + 1
+            ss[idx]<- ss[idx] - 1
         }
-        strat_survey[, , i]<- ss
+        sub_survey[, , i]<- ss
         y<- survey$stations$year[[i]]
         g<- survey$stations$geometry[[i]]
-        strat_survey_by_geom[, , y, g]<- strat_survey_by_geom[, , y, g] + ss
+        sub_survey_by_geom[, , y, g]<- sub_survey_by_geom[, , y, g] + ss
     }
 
     return(
         list(
             stations = survey$stations,
             survey = stars::st_as_stars(
-                list(count = strat_survey),
+                list(count = sub_survey),
                 dimensions = stars::st_dimensions(survey$survey)
             ),
             survey_by_geometry = stars::st_as_stars(
-                list(count = strat_survey_by_geom),
+                list(count = sub_survey_by_geom),
                 dimensions = stars::st_dimensions(survey$survey_by_geometry)
             )
         )

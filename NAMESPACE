@@ -14,7 +14,7 @@ export(plot_abundance)
 export(plot_growth)
 export(plot_mortality)
 export(stratify_combine_survey)
-export(stratify_survey_stations)
+export(subsample_survey_stations)
 importFrom(Matrix,expm)
 importFrom(elhelpers,
   crl,
