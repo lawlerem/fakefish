@@ -160,12 +160,8 @@ subsample_survey_stations<- \(
     sub_survey_by_geom<- 0 * survey$survey_by_geometry[[1]]
     for( i in seq_len(n_survey) ) {
         ss<- sub_survey[, , i]
-        x<- 0 * ss
-        while( sum(x) < n_per_station & sum(ss > 0)) {
-            idx<- sample(n_age * n_class, 1, FALSE, prob = ss)
-            x[idx]<- x[idx] + 1
-            ss[idx]<- ss[idx] - 1
-        }
+        ss[]<- ss |> seq_along() |> factor() |> rep.int(times = ss) |>
+            sample(min(n_per_station, sum(ss)), replace = FALSE) |> table()
         sub_survey[, , i]<- ss
         y<- survey$stations$year[[i]]
         g<- survey$stations$geometry[[i]]
@@ -215,14 +211,9 @@ stratify_combine_survey<- \(
     strat_survey_by_geom<- 0 * survey$survey_by_geometry[[1]]
     for( class in seq_len(n_class) ) {
         ss<- strat_survey[class, , ]
-        x<- array(0, dim = c(n_age, n_survey))
-        while( sum(x) < n_per_class[class] & sum(ss > 0) ) {
-            idx<- sample(length(x), 1, FALSE, prob = ss)
-            x[idx]<- x[idx] + 1
-            ss[idx]<- ss[idx] - 1
-        }
-
-        strat_survey[class, , ]<- x
+        ss[]<- ss |> seq_along() |> factor() |> rep.int(times = ss) |>
+            sample(min(n_per_class[class], sum(ss)), replace = FALSE) |> table()
+        strat_survey[class, , ]<- ss
     }
     for( i in seq(nrow(survey$stations)) ) {
         y<- survey$stations$year[[i]]
